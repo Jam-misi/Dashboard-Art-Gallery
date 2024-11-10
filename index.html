@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Art Gallery Dashboard</title>
+</head>
+<body>
+    <h1>Art Gallery Dashboard</h1>
+    <div class="dashboard">
+        <div class="card bg-primary">
+            <h3>Number of Arts</h3>
+            <h2 id="numArts">120</h2>
+        </div>
+        <div class="card bg-success">
+            <h3>Number of Inquiries</h3>
+            <h2 id="numInquiries">45</h2>
+        </div>
+        <div class="card bg-warning">
+            <h3>Number of Visits</h3>
+            <h2 id="numVisits">250</h2>
+        </div>
+    </div>
+
+    <div class="table-container">
+        <div class="h3">
+            <h3>Visitor Details:</h3>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Visitor ID</th>
+                    <th>Name</th>
+                    <th>Country</th>
+                    <th>City</th>
+                    <th>Date Visited</th>
+                </tr>
+            </thead>
+            <tbody id="visitorsTable"></tbody>
+        </table>
+        <p>Total Visitors: <span id="totalVisitors">250</span></p>
+    </div>
+
+    <div class="chart-container">
+        <div class="ech3">
+        <h3>Top 5 Countries by Visitor Count:</h3>
+        </div>
+        <canvas id="countryChart" width="400" height="300"></canvas>
+    </div>
+
+    <div class="chart-container1">
+        <div class="ech3">
+        <h3>Top 5 Cities by Visitor Count:</h3>
+        </div>
+        <canvas id="cityChart" width="400" height="300"></canvas>
+    </div>
+
+    <div class="click-rate">
+        <div class="ech3">
+        <h3>Picture Click Rate:</h3>
+        </div>
+        <canvas id="clickRateChart" width="400" height="300"></canvas>
+    </div>
+
+    <!-- New Form Clicks Chart -->
+    <div class="form-clicks">
+        <div class="ech3">
+        <h3>Contacted us:</h3>
+        </div>
+        <canvas id="formClickChart" width="400" height="300"></canvas>
+    </div>
+
+    <script>
+        function getRandomElement(arr) {
+            return arr[Math.floor(Math.random() * arr.length)];
+        }
+
+        function generateVisitorData() {
+            const firstNames = ['Alex', 'Jamie', 'Taylor', 'Jordan', 'Casey', 'Morgan', 'Sam', 'Blake', 'Reese', 'Cameron'];
+            const lastNames = ['Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis', 'Martinez', 'Hernandez'];
+            const countries = ['USA', 'Canada', 'UK', 'Australia', 'Germany', 'France', 'Japan', 'Brazil', 'India', 'Italy'];
+            const cities = ['New York', 'Toronto', 'London', 'Sydney', 'Berlin', 'Paris', 'Tokyo', 'São Paulo', 'Mumbai', 'Rome'];
+            
+
+            // Generate random visitor data
+            const visitors = Array.from({ length: 250 }, (_, i) => ({
+                id: `V${String(i + 1).padStart(3, '0')}`,
+                name: `${getRandomElement(firstNames)} ${getRandomElement(lastNames)}`,
+                country: getRandomElement(countries),
+                city: getRandomElement(cities),
+                dateVisited: `2023-${String(Math.floor(Math.random() * 12) + 1).padStart(2, '0')}-${String(Math.floor(Math.random() * 28) + 1).padStart(2, '0')}`
+            }));
+
+            return visitors;
+        }
+
+        // Check if visitor data exists in localStorage
+        let visitors = JSON.parse(localStorage.getItem('visitors'));
+        if (!visitors) {
+            visitors = generateVisitorData();
+            localStorage.setItem('visitors', JSON.stringify(visitors));
+        }
+
+        document.getElementById('totalVisitors').innerText = visitors.length;
+
+        const visitorsTable = document.getElementById('visitorsTable');
+        visitors.forEach((visitor, index) => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${index + 1}</td>
+                <td>${visitor.id}</td>
+                <td>${visitor.name}</td>
+                <td>${visitor.country}</td>
+                <td>${visitor.city}</td>
+                <td>${visitor.dateVisited}</td>
+            `;
+            visitorsTable.appendChild(row);
+        });
+
+        // Count visitors by country and get top 5 countries
+        const countryCounts = visitors.reduce((acc, visitor) => {
+            acc[visitor.country] = (acc[visitor.country] || 0) + 1;
+            return acc;
+        }, {});
+
+        const sortedCountries = Object.entries(countryCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
+        const countryLabels = sortedCountries.map(item => item[0]);
+        const countryData = sortedCountries.map(item => item[1]);
+        const colors = ['#ff6384', '#36a2eb', '#ffcd56', '#4bc0c0', '#9966ff'];
+
+        // Draw country pie chart
+        const countryCanvas = document.getElementById('countryChart');
+        const countryCtx = countryCanvas.getContext('2d');
+        
+        let startAngle = 0;
+        countryData.forEach((count, i) => {
+            const sliceAngle = (count / 140) * 2 * Math.PI;
+            countryCtx.beginPath();
+            countryCtx.moveTo(countryCanvas.width / 2, countryCanvas.height / 2);
+            countryCtx.arc(countryCanvas.width / 2, countryCanvas.height / 2, 100, startAngle, startAngle + sliceAngle);
+            countryCtx.closePath();
+            countryCtx.fillStyle = colors[i % colors.length];
+            countryCtx.fill();
+            startAngle += sliceAngle;
+        });
+
+        // Add legend
+        countryLabels.forEach((label, i) => {
+            countryCtx.fillStyle = colors[i % colors.length];
+            countryCtx.fillRect(300, 50 + i * 20, 10, 10);
+            countryCtx.fillStyle = '#000';
+            countryCtx.fillText(`${label}: ${countryData[i]}`, 320, 60 + i * 20);
+        });
+
+        // Count visitors by city and get top 5 cities
+        const cityCounts = visitors.reduce((acc, visitor) => {
+            acc[visitor.city] = (acc[visitor.city] || 0) + 1;
+            return acc;
+        }, {});
+
+        const sortedCities = Object.entries(cityCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
+        const cityLabels = sortedCities.map(item => item[0]);
+        const cityData = sortedCities.map(item => item[1]);
+
+        // Draw city pie chart
+        const cityCanvas = document.getElementById('cityChart');
+        const cityCtx = cityCanvas.getContext('2d');
+        
+        startAngle = 0;
+        cityData.forEach((count, i) => {
+            const sliceAngle = (count / 140) * 2 * Math.PI;
+            cityCtx.beginPath();
+            cityCtx.moveTo(cityCanvas.width / 2, cityCanvas.height / 2);
+            cityCtx.arc(cityCanvas.width / 2, cityCanvas.height / 2, 100, startAngle, startAngle + sliceAngle);
+            cityCtx.closePath();
+            cityCtx.fillStyle = colors[i % colors.length];
+            cityCtx.fill();
+            startAngle += sliceAngle;
+        });
+
+        // Add legend
+        cityLabels.forEach((label, i) => {
+            cityCtx.fillStyle = colors[i % colors.length];
+            cityCtx.fillRect(300, 50 + i * 20, 10, 10);
+            cityCtx.fillStyle = '#000';
+            cityCtx.fillText(`${label}: ${cityData[i]}`, 320, 60 + i * 20);
+        });
+
+        // Sample click rate data for artworks
+        const clickRates = {
+            "Madonna": 120,
+            "Cavalry": 200,
+            "Portrait of a Man": 150,
+            "Chalice": 80,
+            "Donor": 95
+        };
+
+        const clickRateLabels = Object.keys(clickRates);
+        const clickRateData = Object.values(clickRates);
+
+        const clickCanvas = document.getElementById('clickRateChart');
+        const clickCtx = clickCanvas.getContext('2d');
+        clickCtx.clearRect(0, 0, clickCanvas.width, clickCanvas.height);
+
+        clickRateLabels.forEach((label, index) => {
+            const barHeight = clickRateData[index];
+            clickCtx.fillStyle = '#007bff';
+            clickCtx.fillRect(index * 80 + 50, clickCanvas.height - barHeight, 40, barHeight);
+            clickCtx.fillStyle = '#000';
+            clickCtx.fillText(label, index * 80 + 50, clickCanvas.height - barHeight - 10);
+        });
+
+        // Sample form click data
+        const formClicks = {
+            "Yes": 150,
+            "No": 250,
+            "Viewed": 120,
+        };
+
+        const formClickLabels = Object.keys(formClicks);
+        const formClickData = Object.values(formClicks);
+
+        const formClickCanvas = document.getElementById('formClickChart');
+        const formClickCtx = formClickCanvas.getContext('2d');
+        formClickCtx.clearRect(0, 0, formClickCanvas.width, formClickCanvas.height);
+
+        formClickLabels.forEach((label, index) => {
+            const barHeight = formClickData[index];
+            formClickCtx.fillStyle = '#ffcd56';
+            formClickCtx.fillRect(index * 120 + 50, formClickCanvas.height - barHeight, 60, barHeight);
+            formClickCtx.fillStyle = '#000';
+            formClickCtx.fillText(label, index * 120 + 50, formClickCanvas.height - barHeight - 10);
+        });
+    </script>
+</body>
+</html>
