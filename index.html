@@ -170,7 +170,7 @@
         
         startAngle = 0;
         cityData.forEach((count, i) => {
-            const sliceAngle = (count / 140) * 2 * Math.PI;
+            const sliceAngle = (count / 135) * 2 * Math.PI;
             cityCtx.beginPath();
             cityCtx.moveTo(cityCanvas.width / 2, cityCanvas.height / 2);
             cityCtx.arc(cityCanvas.width / 2, cityCanvas.height / 2, 100, startAngle, startAngle + sliceAngle);
