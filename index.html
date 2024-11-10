@@ -8,6 +8,15 @@
 </head>
 <body>
     <h1>Art Gallery Dashboard</h1>
+    <section class>
+        <div class="dashboard">
+            <div class="card1 bg-card">
+                <a href="https://perezlyncoln.github.io/Online-Gallery---FOP/" class="h1"> Main Page </a>
+             
+            </div>
+        </div>
+    </section>
+
     <div class="dashboard">
         <div class="card bg-primary">
             <h3>Number of Arts</h3>
@@ -170,7 +179,7 @@
         
         startAngle = 0;
         cityData.forEach((count, i) => {
-            const sliceAngle = (count / 135) * 2 * Math.PI;
+            const sliceAngle = (count / 140) * 2 * Math.PI;
             cityCtx.beginPath();
             cityCtx.moveTo(cityCanvas.width / 2, cityCanvas.height / 2);
             cityCtx.arc(cityCanvas.width / 2, cityCanvas.height / 2, 100, startAngle, startAngle + sliceAngle);
